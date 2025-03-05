@@ -72,15 +72,47 @@ Combine options:
 python fetch_changes.py --markdown --output drupal11_changes.md
 ```
 
-#### Output
+### 2. API Documentation Fetcher (`fetch_api.py`)
 
-The generated file contains all change records with clear separators between entries, making it easy to parse or read. Each record is prefixed with its source URL for reference.
+This tool compiles Drupal API documentation from the official Drupal APIs page into a single text file for AI context.
+
+#### Features
+- Extracts all API links from the Drupal APIs landing page
+- Follows each link to capture detailed API documentation
+- Supports both HTML and Markdown output formats
+- Prevents duplicate entries
+- Includes polite request pacing with 1-second delays
+
+#### Usage
+
+Basic usage (HTML output):
+```bash
+python fetch_api.py
+```
+
+Generate Markdown output:
+```bash
+python fetch_api.py --markdown
+```
+
+Specify a custom output file:
+```bash
+python fetch_api.py --output drupal_apis.txt
+```
+
+Combine options:
+```bash
+python fetch_api.py --markdown --output drupal_apis.md
+```
+
+## Output
+
+The generated files contain all documentation with clear separators between entries, making it easy to parse or read. Each section is prefixed with its source URL for reference.
 
 ## Additional Planned Crawlers
 
 We are planning to add more crawlers to fetch additional Drupal documentation sources, such as:
 
-- API documentation
 - Drupal coding standards
 - Common hooks and their implementations
 - Contributed module documentation
