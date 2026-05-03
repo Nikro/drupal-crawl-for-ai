@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://drupal-crawl-for-ai.github.io/schemas/issue_related_artifact.schema.json",
+  "title": "Issue Related Artifact",
+  "description": "Canonical record for a merge request or diff link related to a Drupal.org issue.",
+  "type": "object",
+  "required": ["issue_nid", "artifact_url", "artifact_type", "record_type", "fetched_at"],
+  "properties": {
+    "record_type": {"const": "issue_related_artifact"},
+    "issue_nid": {"type": "integer"},
+    "artifact_url": {"type": "string", "format": "uri"},
+    "artifact_type": {"type": "string", "enum": ["merge_request", "diff", "link"]},
+    "derived_link": {"type": "boolean"},
+    "fetched_at": {"type": "string", "format": "date-time"},
+    "raw_payload": {"type": "object"}
+  }
+}

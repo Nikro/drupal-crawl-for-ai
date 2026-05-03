@@ -1,135 +1,193 @@
 # Drupal Crawl for AI
 
-This repository contains a collection of tools to fetch and compile Drupal documentation into formats suitable for AI context feeding. These crawlers extract valuable information from Drupal.org to provide comprehensive context for AI assistants working with Drupal projects.
+Polite, rerunnable Python extractors for Drupal.org content used in AI training/context pipelines.
 
-## Purpose
+## Mission
 
-The primary goal of this project is to create specialized datasets that can be used as context for large language models (LLMs) when answering Drupal-related queries. By feeding these compiled documents to AI systems, we can enhance their understanding of:
+Build a stable extraction pipeline for:
 
-- Drupal's architectural changes between versions
-- API modifications
-- Deprecations and migrations
-- Best practices and coding standards
+- Drupal change notices (`type=changenotice`)
+- Drupal issue queues (`type=project_issue`)
+- Issue comments (`comment.json?node=<nid>`)
+- Related metadata needed for downstream knowledge artifacts
 
-## Setup
+The pipeline is API-first, deterministic, and fully checkpointed for resume.
 
-### Prerequisites
+---
 
-- Python 3.6+
-- Git
+## Installation
 
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/drupal-crawl-for-ai.git
-   cd drupal-crawl-for-ai
-   ```
-
-2. Create and activate a virtual environment:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Available Crawlers
-
-### 1. Change Records Fetcher (`fetch_changes.py`)
-
-This tool compiles all Drupal change records for specified versions into a single text file, which can then be used as context for AI systems.
-
-#### Features
-- Crawls Drupal.org's change records for Drupal 11 branches (11.0.x, 11.1.x, 11.2.x)
-- Supports both HTML and Markdown output formats
-- Follows pagination to ensure all records are captured
-- Prevents duplicate entries
-- Politely paces requests to avoid overwhelming the server
-
-#### Usage
-
-Basic usage (HTML output):
 ```bash
-python fetch_changes.py
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
 ```
 
-Generate Markdown output:
+Requires Python 3.10+.
+
+---
+
+## Venv Survival Guide
+
+After a workspace compaction or fresh clone, the `.venv` may be gone or broken. To get running again:
+
 ```bash
-python fetch_changes.py --markdown
+# 1. Recreate venv
+python3 -m venv .venv
+
+# 2. Activate (must be done before any pip install or drupal-crawl call)
+source .venv/bin/activate
+
+# 3. Install deps
+pip install requests beautifulsoup4 html2text click pytest ruff mypy
+
+# 4. Install package in dev mode
+pip install -e .
 ```
 
-Specify a custom output file:
+**On every new shell session**, you must run `source .venv/bin/activate` before using `drupal-crawl`, `pytest`, `ruff`, or `mypy`. The `drupal-crawl` command only exists inside the activated venv.
+
+**Aliases** — add to your shell profile (or `.agents.env` in the repo root) for convenience:
+
 ```bash
-python fetch_changes.py --output drupal11_changes.txt
+alias va='source .venv/bin/activate'       # activate venv
+alias crawl='.venv/bin/drupal-crawl'         # run without activating
+alias test='va && pytest tests/ -q'          # run tests
+alias lint='va && ruff check src tests'      # lint
 ```
 
-Combine options:
+---
+
+## CLI Usage
+
+All commands share: `--delay-seconds`, `--max-retries`, `--max-pages`, `--output-root`, `--runs-root`, `--format` (jsonl|markdown|both), `--resume-run`.
+
+### Change notices
+
 ```bash
-python fetch_changes.py --markdown --output drupal11_changes.md
+source .venv/bin/activate
+drupal-crawl changes --project 3060 --max-pages 5 --format jsonl
 ```
 
-### 2. API Documentation Fetcher (`fetch_api.py`)
+### Issue queue
 
-This tool compiles Drupal API documentation from the official Drupal APIs page into a single text file for AI context.
-
-#### Features
-- Extracts all API links from the Drupal APIs landing page
-- Follows each link to capture detailed API documentation
-- Supports both HTML and Markdown output formats
-- Prevents duplicate entries
-- Includes polite request pacing with 1-second delays
-
-#### Usage
-
-Basic usage (HTML output):
 ```bash
-python fetch_api.py
+drupal-crawl issues --project 3060 --max-pages 5 --format both
+drupal-crawl issues --project 3060 --project 12345 --max-issues 100 --max-pages 20
 ```
 
-Generate Markdown output:
+### Single issue
+
 ```bash
-python fetch_api.py --markdown
+drupal-crawl issue --nid 3382735 --include-comments --format jsonl
 ```
 
-Specify a custom output file:
+### Full issue bundle (queue + details + comments)
+
 ```bash
-python fetch_api.py --output drupal_apis.txt
+drupal-crawl issue-bundle --project 3060 --max-pages 5 --max-issues 50 --format both
 ```
 
-Combine options:
+### Resume an interrupted run
+
 ```bash
-python fetch_api.py --markdown --output drupal_apis.md
+drupal-crawl issues --project 3060 --resume-run <run_id>
 ```
 
-## Output
+### Output
 
-The generated files contain all documentation with clear separators between entries, making it easy to parse or read. Each section is prefixed with its source URL for reference.
+All output goes under `--output-root` (default: `data`):
 
-## Additional Planned Crawlers
+```
+data/normalized/<run_id>/records.jsonl   # canonical JSONL records
+data/normalized/<run_id>/markdown/        # rendered Markdown files
+runs/<run_id>/manifest.json              # run manifest + counters
+data/raw/cache/                          # cached API responses (7-day TTL)
+```
 
-We are planning to add more crawlers to fetch additional Drupal documentation sources, such as:
+To clear cache: `rm -rf data/raw/cache/`
 
-- Drupal coding standards
-- Common hooks and their implementations
-- Contributed module documentation
+---
 
-## Intended Use
+## Politeness Defaults
 
-The compiled data is intended to be used as:
+- **Single-threaded** — one request at a time
+- **2.0s delay** between calls (configurable via `--delay-seconds`)
+- **Retry with backoff** on `429` and `5xx` (max 5 retries)
+- **User-Agent**: `drupal-crawl-for-ai/<version> (+https://github.com/...)`
+- **Accept**: `application/json`
 
-1. Context files for AI assistants and large language models
-2. Reference material for developers working on Drupal version migrations
-3. Training data for fine-tuning specialized Drupal AI models
-4. Comprehensive documentation for rapid onboarding of developers new to Drupal
+---
+
+## Resume and Cache Reuse
+
+Each run writes a manifest to `runs/<run_id>/manifest.json` tracking:
+- pagination cursor position
+- counters (fetched, succeeded, failed, cache_hits)
+- failures
+
+When you re-run with `--resume-run <run_id>`, extraction continues from the last checkpoint. Cache in `data/raw/cache/` stores responses with 7-day TTL to avoid re-fetching unchanged data.
+
+To clear cache: `rm -rf data/raw/cache/`
+
+---
+
+## Repository Layout
+
+```text
+src/drupal_crawl_ai/
+├── cli.py                  # Click CLI entrypoint
+├── config.py               # Config dataclasses
+├── http/
+│   ├── client.py          # Polite HTTP client (retry, pacing)
+│   └── cache.py           # Read-through response cache
+├── api/
+│   ├── nodes.py           # Node API helper
+│   ├── comments.py        # Comment API helper
+│   └── pagination.py      # Pagination iterator
+├── discovery/
+│   └── project_lookup.py  # Project alias resolution
+├── extractors/
+│   ├── changes.py         # Change notices
+│   ├── issues.py          # Issue queue
+│   ├── issue_details.py   # Single issue
+│   ├── issue_comments.py # Comments per issue
+│   └── issue_bundle.py    # Full bundle orchestrator
+├── normalize/
+│   ├── records.py         # Canonical record normalizers
+│   └── markdown.py        # HTML→Markdown renderer
+├── storage/
+│   ├── manifest.py        # Run manifest + checkpoint
+│   ├── writer.py          # Unified output writer
+│   ├── writer_jsonl.py    # JSONL append writer
+│   └── writer_markdown.py # Per-entity markdown writer
+└── schemas/               # JSON schemas for records
+data/
+├── raw/cache/            # Cached API responses
+├── raw/<run_id>/         # Raw payloads per run
+└── normalized/<run_id>/   # Canonical + markdown output
+runs/<run_id>/manifest.json
+```
+
+---
+
+## Current Status
+
+**V2 implementation is complete.** All milestones A–J and I are implemented:
+- Package scaffold, tooling, quality gates
+- HTTP primitives with polite pacing and caching
+- API helpers with pagination
+- Run manifests with checkpoint/resume
+- Canonical schemas, normalizers, markdown renderer
+- JSONL and markdown storage writers
+- Extractors for changes, issues, issue details, comments, and bundles
+- Project alias resolution
+- Full Click CLI with validation
+
+Milestones K (README, runbook) and L (verification gate) are the final steps.
+
+---
 
 ## License
 
-This project is released under the MIT License. See the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+MIT License

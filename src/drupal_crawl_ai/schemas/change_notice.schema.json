@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://drupal-crawl-for-ai.github.io/schemas/change_notice.schema.json",
+  "title": "Change Notice",
+  "description": "Canonical record for a Drupal.org change notice.",
+  "type": "object",
+  "required": ["nid", "title", "field_project", "created", "changed", "record_type", "source_url", "fetched_at"],
+  "properties": {
+    "record_type": {"const": "change_notice"},
+    "nid": {"type": "integer"},
+    "title": {"type": "string"},
+    "body": {"type": "string"},
+    "field_project": {"type": "integer"},
+    "field_change_records": {"type": "array", "items": {"type": "string"}},
+    "created": {"type": "string", "format": "date-time"},
+    "changed": {"type": "string", "format": "date-time"},
+    "source_url": {"type": "string", "format": "uri"},
+    "source_endpoint": {"type": "string"},
+    "source_params": {"type": "object"},
+    "fetched_at": {"type": "string", "format": "date-time"},
+    "raw_payload": {"type": "object"}
+  }
+}

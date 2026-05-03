@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://drupal-crawl-for-ai.github.io/schemas/issue_comment.schema.json",
+  "title": "Issue Comment",
+  "description": "Canonical record for a Drupal.org issue comment.",
+  "type": "object",
+  "required": ["cid", "nid", "subject", "created", "record_type", "source_url", "fetched_at"],
+  "properties": {
+    "record_type": {"const": "issue_comment"},
+    "cid": {"type": "integer"},
+    "nid": {"type": "integer"},
+    "subject": {"type": "string"},
+    "body": {"type": "string"},
+    "created": {"type": "string", "format": "date-time"},
+    "changed": {"type": "string", "format": "date-time"},
+    "author_name": {"type": "string"},
+    "author_mail": {"type": "string"},
+    "source_url": {"type": "string", "format": "uri"},
+    "source_endpoint": {"type": "string"},
+    "source_params": {"type": "object"},
+    "fetched_at": {"type": "string", "format": "date-time"},
+    "raw_payload": {"type": "object"}
+  }
+}

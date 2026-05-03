@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Run Manifest",
+  "description": "Run manifest and checkpoint for a drupal-crawl-for-ai extraction run.",
+  "type": "object",
+  "required": ["run_id", "created_at", "updated_at", "status", "options", "counters", "pages"],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "description": "Unique run identifier (UUID recommended)."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp when the run started."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 timestamp when the run was last updated."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["running", "completed", "failed", "interrupted"],
+      "description": "Current run status."
+    },
+    "command": {
+      "type": "string",
+      "description": "CLI command that started this run."
+    },
+    "options": {
+      "type": "object",
+      "description": "Resolved options for this run.",
+      "properties": {
+        "projects": {
+          "type": "array",
+          "items": {"type": ["integer", "string"]},
+          "description": "Project NIDs or aliases targeted."
+        },
+        "entity_type": {
+          "type": "string",
+          "enum": ["changenotice", "project_issue", "issue_bundle"]
+        },
+        "format": {
+          "type": "string",
+          "enum": ["jsonl", "markdown", "both"]
+        },
+        "max_pages": {"type": "integer"},
+        "max_issues": {"type": "integer"},
+        "allow_html_discovery": {"type": "boolean"},
+        "resume_from_run_id": {"type": "string"}
+      }
+    },
+    "cursor": {
+      "type": "object",
+      "description": "Current pagination cursor — position to resume from.",
+      "properties": {
+        "page": {"type": "integer"},
+        "next_url": {"type": "string"},
+        "last_entity_id": {"type": ["integer", "string"]}
+      }
+    },
+    "counters": {
+      "type": "object",
+      "properties": {
+        "fetched": {"type": "integer"},
+        "succeeded": {"type": "integer"},
+        "failed": {"type": "integer"},
+        "skipped_duplicates": {"type": "integer"},
+        "cache_hits": {"type": "integer"}
+      }
+    },
+    "failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {"type": "string"},
+          "status_code": {"type": "integer"},
+          "error": {"type": "string"},
+          "entity_id": {"type": ["integer", "string"]}
+        }
+      }
+    },
+    "source_modes": {
+      "type": "object",
+      "description": "Count of records by source mode (api vs html_fallback).",
+      "additionalProperties": {"type": "integer"}
+    }
+  }
+}

@@ -1,0 +1,46 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Python caches and build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local tooling/dev environments
+.devcontainer/
+.opencode/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Runtime logs/temp
+*.log
+*.tmp
+tmp/
+
+# Generated extraction artifacts (keep folder scaffold tracked)
+data/raw/*
+!data/raw/.gitkeep
+data/normalized/*
+!data/normalized/.gitkeep
+runs/*
+!runs/.gitkeep
+
+# Local planning docs
+PLAN.md
+TASKS.md
+tasks.md
