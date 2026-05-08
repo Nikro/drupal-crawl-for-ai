@@ -20,7 +20,7 @@ The pipeline is API-first, deterministic, and fully checkpointed for resume.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e .
+pip install -r requirements-dev.txt
 ```
 
 Requires Python 3.10+.
@@ -38,12 +38,26 @@ python3 -m venv .venv
 # 2. Activate (must be done before any pip install or drupal-crawl call)
 source .venv/bin/activate
 
-# 3. Install deps
-pip install requests beautifulsoup4 html2text click pytest ruff mypy
-
-# 4. Install package in dev mode
-pip install -e .
+# 3. Install locked dev environment (runtime + test/lint/typecheck tools)
+pip install -r requirements-dev.txt
 ```
+
+### Dependency management policy (best practice)
+
+- **Source of truth:** `pyproject.toml`
+- **Reproducible installs:** `requirements.txt` and `requirements-dev.txt` (generated, pinned)
+- **No manual ad-hoc installs in docs**
+
+Refresh lockfiles only when dependencies intentionally change:
+
+```bash
+source .venv/bin/activate
+pip install -e ".[dev]"
+pip-compile pyproject.toml -o requirements.txt
+pip-compile pyproject.toml --extra dev -o requirements-dev.txt
+```
+
+Then commit: `pyproject.toml`, `requirements.txt`, `requirements-dev.txt` together.
 
 **On every new shell session**, you must run `source .venv/bin/activate` before using `drupal-crawl`, `pytest`, `ruff`, or `mypy`. The `drupal-crawl` command only exists inside the activated venv.
 
