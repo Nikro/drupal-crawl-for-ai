@@ -1,13 +1,13 @@
 """Unit tests for JsonlWriter."""
-
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from drupal_crawl_ai.storage.writer_jsonl import JsonlWriter
 
 
-def test_write_single_record(tmp_path):
+def test_write_single_record(tmp_path: Path) -> None:
     path = tmp_path / "records.jsonl"
     writer = JsonlWriter(path)
     writer.write({"nid": 123, "title": "Test issue"})
@@ -16,7 +16,7 @@ def test_write_single_record(tmp_path):
     assert json.loads(lines[0])["nid"] == 123
 
 
-def test_write_batch(tmp_path):
+def test_write_batch(tmp_path: Path) -> None:
     path = tmp_path / "records.jsonl"
     writer = JsonlWriter(path)
     writer.write_batch([{"nid": 1}, {"nid": 2}, {"nid": 3}])
@@ -24,7 +24,7 @@ def test_write_batch(tmp_path):
     assert len(lines) == 3
 
 
-def test_each_line_parses_to_dict(tmp_path):
+def test_each_line_parses_to_dict(tmp_path: Path) -> None:
     path = tmp_path / "records.jsonl"
     writer = JsonlWriter(path)
     writer.write({"type": "issue", "nid": 1})
@@ -34,15 +34,15 @@ def test_each_line_parses_to_dict(tmp_path):
         assert isinstance(parsed, dict)
 
 
-def test_file_is_utf8(tmp_path):
+def test_file_is_utf8(tmp_path: Path) -> None:
     path = tmp_path / "records.jsonl"
     writer = JsonlWriter(path)
     writer.write({"title": "Héllo Wörld"})
     raw = path.read_bytes()
-    raw.decode("utf-8")
+    raw.decode("utf-8")  # must not raise
 
 
-def test_append_safe(tmp_path):
+def test_append_safe(tmp_path: Path) -> None:
     path = tmp_path / "records.jsonl"
     writer = JsonlWriter(path)
     writer.write({"nid": 1})
@@ -52,9 +52,10 @@ def test_append_safe(tmp_path):
     assert len(lines) == 3
 
 
-def test_deterministic_key_order(tmp_path):
+def test_deterministic_key_order(tmp_path: Path) -> None:
     path = tmp_path / "records.jsonl"
     writer = JsonlWriter(path)
     writer.write({"z": 1, "a": 2, "m": 3})
     line = path.read_text(encoding="utf-8").strip()
+    # Keys must be sorted
     assert line.index('"a"') < line.index('"m"') < line.index('"z"')

@@ -127,6 +127,12 @@ def normalize_change_notice(raw: dict[str, Any], fetched_at: str) -> dict[str, A
     else:
         body_raw = ""
 
+    # Change notice primary text is often stored in field_description.
+    if not body_raw:
+        _description = raw.get("field_description", {})
+        if isinstance(_description, dict):
+            body_raw = _description.get("value", "") or ""
+
     record: dict[str, Any] = {
         "record_type": "change_notice",
         "nid": _norm_field(nid),
@@ -134,6 +140,9 @@ def normalize_change_notice(raw: dict[str, Any], fetched_at: str) -> dict[str, A
         "body": body_raw,
         "raw_body": body_raw,
         "field_project": _norm_field(raw.get("field_project")),
+        "field_change_to_branch": raw.get("field_change_to_branch", ""),
+        "field_issue_links": raw.get("field_issue_links", []),
+        "field_issues": raw.get("field_issues", []),
         "field_change_records": raw.get("field_change_records", []),
         "created": _ensure_iso(raw.get("created")),
         "changed": _ensure_iso(raw.get("changed")),

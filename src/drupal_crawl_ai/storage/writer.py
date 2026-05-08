@@ -61,7 +61,7 @@ class Writer:
             return
 
         cid = comment.get("cid", 0)
-        comment_md = self._renderer.render_with_frontmatter(comment)
+        comment_body = str(comment.get("comment") or comment.get("body") or "")
 
         # Append to the issue's markdown file
         issue_path = self._md._root / "project_issue" / f"{issue_id}.md"
@@ -72,4 +72,4 @@ class Writer:
             existing = ""
 
         with open(issue_path, "w", encoding="utf-8") as f:
-            f.write(existing + "\n\n## Comment: " + str(cid) + "\n\n" + comment_md)
+            f.write(existing + "\n\n## Comment: " + str(cid) + "\n\n" + comment_body + "\n")

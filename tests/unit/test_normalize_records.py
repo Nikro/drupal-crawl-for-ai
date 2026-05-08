@@ -55,10 +55,29 @@ def test_normalize_comment():
 
 
 def test_normalize_change_notice():
-    raw = {"nid": 555, "title": "Change", "field_project": "3060"}
+    raw = {
+        "nid": 555,
+        "title": "Change",
+        "field_project": "3060",
+        "field_change_to_branch": "11.x",
+        "field_issue_links": [{"url": "https://www.drupal.org/node/123"}],
+    }
     result = normalize_change_notice(raw, "2025-01-01T00:00:00Z")
     assert result["record_type"] == "change_notice"
     assert result["nid"] == 555
+    assert result["field_change_to_branch"] == "11.x"
+    assert result["field_issue_links"][0]["url"].endswith("/123")
+
+
+def test_normalize_change_notice_uses_field_description_when_body_empty():
+    raw = {
+        "nid": 556,
+        "title": "Change",
+        "body": [],
+        "field_description": {"value": "<p>Primary change text</p>"},
+    }
+    result = normalize_change_notice(raw, "2025-01-01T00:00:00Z")
+    assert result["body"] == "<p>Primary change text</p>"
 
 
 def test_normalize_missing_fields_handled_gracefully():

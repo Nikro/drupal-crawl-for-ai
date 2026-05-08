@@ -88,6 +88,7 @@ class RunManifest(Mapping):
             },
             "failures": [],
             "source_modes": {},
+            "_fallback_log": [],
         }
 
     def write_initial(self, command: str, options: dict[str, Any]) -> None:
@@ -131,6 +132,15 @@ class RunManifest(Mapping):
     def record_source_mode(self, mode: str) -> None:
         counts = self._data.setdefault("source_modes", {})
         counts[mode] = counts.get(mode, 0) + 1
+        self._data["updated_at"] = _now_iso()
+        self._persist()
+
+    def record_fallback(self, url: str, reason: str) -> None:
+        """Record that HTML fallback was used for a URL."""
+        self._data.setdefault("_fallback_log", []).append({
+            "url": url,
+            "reason": reason,
+        })
         self._data["updated_at"] = _now_iso()
         self._persist()
 
