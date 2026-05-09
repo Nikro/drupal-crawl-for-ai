@@ -20,6 +20,7 @@ htmlcov/
 # Local tooling/dev environments
 .devcontainer/
 .opencode/
+.agents.env
 
 # OS/editor files
 .DS_Store
@@ -32,13 +33,9 @@ Thumbs.db
 *.tmp
 tmp/
 
-# Generated extraction artifacts (keep folder scaffold tracked)
-data/raw/*
-!data/raw/.gitkeep
-data/normalized/*
-!data/normalized/.gitkeep
-runs/*
-!runs/.gitkeep
+# Generated extraction artifacts
+data/
+runs/
 
 # Local planning docs
 PLAN.md

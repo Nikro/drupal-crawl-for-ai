@@ -56,7 +56,7 @@ Primary targets:
 ## Data model and artifact expectations (v2 direction)
 
 The codebase should evolve toward:
-- `knowledge/schemas/` for canonical JSON schemas
+- `src/drupal_crawl_ai/schemas/` for canonical JSON schemas
 - `data/raw/` for cached source payloads
 - `data/normalized/` for cleaned canonical records
 - `runs/` for manifests, checkpoints, and run metadata
